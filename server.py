@@ -1,7 +1,9 @@
+from subprocess import run
+
 import socket, threading                                                #Libraries import
 
 host = '127.0.0.1'                                                      #LocalHost
-port = 5038                                                           #Choosing unreserved port
+port = 5055                                                           #Choosing unreserved port
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization
 server.bind((host, port))                                               #binding host and port to socket
@@ -20,28 +22,39 @@ def broadcast(message):                                                 #broadca
 ### psydo code
 def broadcastUser(user, message):
     print("inside bU")
+
+    print(users[user][0])
+
     client = users[user][0]
 
     print(client)
-
+    print(message)
     client.send(message)
 
 
+
 def cleanData(message):
-    print(message)
     data = message
     m = data.decode("utf-8")
     l = m.split(':')
 
     user = l[0]
-    s = l[1]
+    text = l[1]
 
-    text = s.encode('ascii')
-
-    print(user)
-    print(text)
+    #text = s.encode('ascii')
 
     return user, text
+
+def uploadIPFS(message):
+    with open("txt.txt", "wb") as txt:
+        txt.write(message)
+        cmd = [ 'ipfs', 'add', 'txt.txt' ]
+        out = run(cmd, capture_output=True).stdout
+        output = out.decode("utf-8")
+        outputs = output.split(" ")
+        uri = outputs[1]
+        print(uri)
+        return uri
 
 
 def handle(client):                                         
@@ -51,7 +64,9 @@ def handle(client):
 
             user, text = cleanData(message)
 
-            broadcastUser(user, text)
+            uri = uploadIPFS(text)
+
+            broadcastUser(user, uri)
 
             #broadcast(message)
 
