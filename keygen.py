@@ -1,21 +1,34 @@
-from ecies.utils import generate_eth_key, generate_key
-from ecies import encrypt, decrypt
+###### KEY GEN SCRIPT ##########
+from tinyec import registry
+from Crypto.Cipher import AES
+import hashlib, secrets, binascii
+import tinyec.ec as ec
 
-eth_k = generate_eth_key()
-sk_hex = eth_k.to_hex()  # hex string
-pk_hex = eth_k.public_key.to_hex() 
 
-keys = {
-    "eth_k" : eth_k,
-    "sk_hex" :  sk_hex,
-    "pk_hex" : pk_hex
-}
+# convert pubKey thing to hex
+def compress_point(point):
+    return hex(point.x) + hex(point.y % 2)[2:]
 
-with open("sk_hex.txt", "w") as pk:
-    pk.write(sk_hex)
 
-with open("pk_hex.txt", "w") as pk:
-    pk.write(pk_hex)
+def keyGen():
+    
+    # obviously you can change the curve values
+    curve = registry.get_curve('brainpoolP256r1')
+    
+    privKey = secrets.randbelow(curve.field.n)
+    pubKey = privKey * curve.g
+    
+    return privKey, pubKey
+    
+    
+privKey, pubKey = keyGen()
 
-print(sk_hex)
-print(pk_hex)
+
+pubKeyHex = compress_point(pubKey)
+
+
+with open("privKey.txt", "w") as privk:
+    privk.write(str(privKey))
+
+with open("pubKey.txt", "w") as pubk:
+    pubk.write(str(pubKeyHex))

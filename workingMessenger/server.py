@@ -40,9 +40,9 @@ def cleanData(message):
 
     return user, text
 
-
+# server side upload function
 def uploadIPFS(message):
-    with open("txt.txt", "w") as txt:
+    with open("txt.txt", "wb") as txt:
         txt.write(message)
     cmd = [ 'ipfs', 'add', 'txt.txt' ]
     out = run(cmd, capture_output=True).stdout
