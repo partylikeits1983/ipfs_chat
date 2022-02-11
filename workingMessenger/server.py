@@ -33,22 +33,38 @@ def broadcastUser(user, message):
 def cleanData(message):
     data = message
     m = data.decode("utf-8")
-    l = m.split(':')
+    l = m.split('~')
 
     user = l[0]
     text = l[1]
 
+    text = eval(text)
+
     return user, text
+
 
 # server side upload function
 def uploadIPFS(message):
-    with open("txt.txt", "wb") as txt:
+
+    print(type(message))
+
+    print(message)
+
+    print("code 1")
+
+    with open("txt.txt", "w") as txt:
         txt.write(message)
+
+    print("code 2")
+
     cmd = [ 'ipfs', 'add', 'txt.txt' ]
     out = run(cmd, capture_output=True).stdout
     output = out.decode("utf-8")
     outputs = output.split(" ")
     uri = outputs[1]
+
+    print("code 3")
+
     return uri
 
 
@@ -60,6 +76,8 @@ def handle(client):
             user, text = cleanData(message)
 
             uri = uploadIPFS(text)
+
+            print(uri)
 
             broadcastUser(user, uri)
 
