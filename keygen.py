@@ -4,10 +4,9 @@ from Crypto.Cipher import AES
 import hashlib, secrets, binascii
 import tinyec.ec as ec
 
-
 # convert pubKey thing to hex
 def compress_point(point):
-    return hex(point.x) + hex(point.y % 2)[2:]
+    return hex(point.x) + hex(point.y)
 
 
 def keyGen():
@@ -24,11 +23,15 @@ def keyGen():
 privKey, pubKey = keyGen()
 
 
+privKeyHex = hex(privKey)
 pubKeyHex = compress_point(pubKey)
 
 
 with open("privKey.txt", "w") as privk:
-    privk.write(str(privKey))
+    privk.write(str(privKeyHex))
 
 with open("pubKey.txt", "w") as pubk:
     pubk.write(str(pubKeyHex))
+    
+print("private key: " + str(privKeyHex))
+print("public key: " + str(pubKeyHex))
