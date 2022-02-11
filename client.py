@@ -6,10 +6,15 @@ import binascii
 
 import socket, threading
 
+
+# eventually this will be your public key
 nickname = input("Choose your nickname: ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
 client.connect(('127.0.0.1', 5055))                             #connecting client to server
+
+
+
 
 def receive():
     while True:                                                 #making valid connection
@@ -67,7 +72,7 @@ def dec(file):
     with open('sk_hex.txt', 'r') as file:
         secret_key = file.read().replace('\n', '')
 
-    text = decrypt(secret_key, cipher).decode("utf-8")
+    text = decrypt_ECC(encryptedMsgS, privKey)
     print(text)
 
 
