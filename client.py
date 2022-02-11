@@ -17,7 +17,7 @@ import tinyec.ec as ec
 nickname = input("Choose your nickname: ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
-client.connect(('127.0.0.1', 5055))                             #connecting client to server
+client.connect(('127.0.0.1', 5078))                             #connecting client to server
 
 
 def receive():
@@ -27,11 +27,18 @@ def receive():
             if message == 'NICKNAME':
                 client.send(nickname.encode('ascii'))
             else:
-                connector2(message)
-                print(message)
+                #print(message)
+                
+                try:
+                    connector2(message)
+                except:
+                    print("")
+
+                
+                
                 
         except:                                                 #case on wrong ip/port details
-            print("An error occured!")
+            #print("An error occured!")
             #client.close()
             break
 
@@ -39,12 +46,12 @@ def receive():
 def write():
     while True:                                                 #message layout
         #message = '{}: {}'.format(nickname, input(''))
-        message = '{}~ {}'.format(input("To: "), connector())
-        
-        print("write")
+        message = '{}~ {}'.format(input("To: "), connector())     
+
+        #print(message)
 
         #message = input()
-        print(message.encode('ascii'))
+        #print(message.encode('ascii'))
         client.send(message.encode('ascii'))
 
 
@@ -97,25 +104,35 @@ def encryptUserInput(message, pubKey):
     
     return m
 
+
+
 def connector():
 
         # the pubKey is essentially the address of the other user
     with open("pubKey.txt", "r") as pubk:
         pubKeyHex = pubk.read()
         
-    # get PUBLIC KEY POINT    
+    # get PUBLIC KEY POINT
+    curve = registry.get_curve('brainpoolP256r1')
+    
     pubKey = decompress_point(curve,pubKeyHex)
 
     message = messageInput()
     encryptedMsgS = encryptUserInput(message, pubKey)
-    
-    print("pubkey def")
 
     return encryptedMsgS
 
 
-######################## ENCRYPTION FUNCTIONS ############
 
+
+################################ SEND THROUGH SERVER #####################
+
+
+######################## ENCRYPTION FUNCTIONS ############
+from tinyec import registry
+from Crypto.Cipher import AES
+import hashlib, secrets, binascii
+import tinyec.ec as ec
 
 def encrypt_AES_GCM(msg, secretKey):
     aesCipher = AES.new(secretKey, AES.MODE_GCM)
@@ -132,9 +149,8 @@ def ecc_point_to_256_bit_key(point):
     sha.update(int.to_bytes(point.y, 32, 'big'))
     return sha.digest()
 
-curve = registry.get_curve('brainpoolP256r1')
-
 def encrypt_ECC(msg, pubKey):
+    curve = registry.get_curve('brainpoolP256r1')
     ciphertextPrivKey = secrets.randbelow(curve.field.n)
     sharedECCKey = ciphertextPrivKey * pubKey
     secretKey = ecc_point_to_256_bit_key(sharedECCKey)
@@ -148,6 +164,8 @@ def decrypt_ECC(encryptedMsg, privKey):
     secretKey = ecc_point_to_256_bit_key(sharedECCKey)
     plaintext = decrypt_AES_GCM(ciphertext, nonce, authTag, secretKey)
     return plaintext
+
+
 
 # compress x and y values to hex
 def compress_point(point):
@@ -177,6 +195,8 @@ def decompress_point(curve, pubKeyHex):
     
     return p
 
+
+
 ########### DOWNLOAD IPFS AND DECRYPT ##############
 
 ### download from IPFS
@@ -196,11 +216,16 @@ def dec(file):
         return cipher
 
 
+
 # rebuild data structure
 def decryptMessage(m):
     d = m.decode("ascii")
     
     array = d.split(': ')
+    
+    #print(array)
+    
+    #a = array[0].replace("\\", "")
     
     a = array[0].strip()
     a = eval(a)
@@ -221,6 +246,8 @@ def decryptMessage(m):
     x = int(x,16)
     y = int(y,16)
     
+    curve = registry.get_curve('brainpoolP256r1')
+    
     p = ec.Point(curve,x,y)
     
     array = [ciphertext, nonce, authTag, p]
@@ -229,8 +256,8 @@ def decryptMessage(m):
     
     return encryptedMsgS
 
-
 def connector2(uri):
+
     file = ipfs(uri)
     cipher = dec(file)
     encryptedMsgS = decryptMessage(cipher)
@@ -242,9 +269,11 @@ def connector2(uri):
     
     message = decrypt_ECC(encryptedMsgS, privKey)
 
+    message = message.decode("ascii")
+    
     print(message)
     
-    #return message
+    return message
 
 
 

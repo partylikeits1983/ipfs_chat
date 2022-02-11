@@ -3,7 +3,7 @@ from subprocess import run
 
 
 host = '127.0.0.1'                                                      #LocalHost
-port = 5055                                                           #Choosing unreserved port
+port = 5078                                                          #Choosing unreserved port
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization
 server.bind((host, port))                                               #binding host and port to socket
@@ -22,12 +22,24 @@ def broadcast(message):                                                 #broadca
 ### psydo code
 def broadcastUser(user, message):
     print("inside bU")
+
+    uri = message
+
     client = users[user][0]
 
-    uri = message.encode('ascii')
+    uri = uri.encode('ascii')
 
     print(uri)
-    client.send(uri)
+
+    print(type(uri))
+
+    try: 
+        client.send(uri)
+        print("sent")
+    except:
+        print("sad :(")
+
+    
 
 
 def cleanData(message):
@@ -37,35 +49,24 @@ def cleanData(message):
 
     user = l[0]
     text = l[1]
-
+    
     text = eval(text)
 
     return user, text
 
 
+
 # server side upload function
 def uploadIPFS(message):
-
-    print(type(message))
-
-    print(message)
-
-    print("code 1")
-
-    with open("txt.txt", "w") as txt:
+    with open("txt.txt", "wb") as txt:
         txt.write(message)
-
-    print("code 2")
-
     cmd = [ 'ipfs', 'add', 'txt.txt' ]
     out = run(cmd, capture_output=True).stdout
     output = out.decode("utf-8")
     outputs = output.split(" ")
     uri = outputs[1]
-
-    print("code 3")
-
     return uri
+
 
 
 def handle(client):                                         
@@ -114,7 +115,7 @@ def receive():                                                          #accepti
         print(users)
 
         print("Nickname is {}".format(nickname))
-        broadcast("{} joined!".format(nickname).encode('ascii'))
+        #broadcast("{} joined!".format(nickname).encode('ascii'))
 
         client.send('Connected to server!'.encode('ascii'))
         thread = threading.Thread(target=handle, args=(client,))
