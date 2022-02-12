@@ -3,7 +3,7 @@ from subprocess import run
 
 
 host = '127.0.0.1'                                                      #LocalHost
-port = 5078                                                          #Choosing unreserved port
+port = 5055                                                          #Choosing unreserved port
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization
 server.bind((host, port))                                               #binding host and port to socket

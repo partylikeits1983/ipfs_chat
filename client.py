@@ -1,58 +1,22 @@
-from ecies.utils import generate_eth_key, generate_key
-from ecies import encrypt, decrypt
 from subprocess import run
-
-import binascii
-
 import socket, threading
-
+import binascii
 
 from tinyec import registry
 from Crypto.Cipher import AES
 import hashlib, secrets, binascii
-import tinyec.ec as ec
 
+import tinyec.ec as ec
+from ecies.utils import generate_eth_key, generate_key
+from ecies import encrypt, decrypt
+
+port = 5055
 
 # eventually this will be your public key
 nickname = input("Choose your nickname: ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
-client.connect(('127.0.0.1', 5078))                             #connecting client to server
-
-
-def receive():
-    while True:                                                 #making valid connection
-        try:
-            message = client.recv(1024).decode('ascii')
-            if message == 'NICKNAME':
-                client.send(nickname.encode('ascii'))
-            else:
-                #print(message)
-                
-                try:
-                    connector2(message)
-                except:
-                    print("")
-
-                
-                
-                
-        except:                                                 #case on wrong ip/port details
-            #print("An error occured!")
-            #client.close()
-            break
-
-
-def write():
-    while True:                                                 #message layout
-        #message = '{}: {}'.format(nickname, input(''))
-        message = '{}~ {}'.format(input("To: "), connector())     
-
-        #print(message)
-
-        #message = input()
-        #print(message.encode('ascii'))
-        client.send(message.encode('ascii'))
+client.connect(('127.0.0.1', port))                             #connecting client to server
 
 
 ############ SENDING FUNCTIONS #######################
@@ -105,7 +69,6 @@ def encryptUserInput(message, pubKey):
     return m
 
 
-
 def connector():
 
         # the pubKey is essentially the address of the other user
@@ -124,30 +87,28 @@ def connector():
 
 
 
-
 ################################ SEND THROUGH SERVER #####################
 
 
 ######################## ENCRYPTION FUNCTIONS ############
-from tinyec import registry
-from Crypto.Cipher import AES
-import hashlib, secrets, binascii
-import tinyec.ec as ec
 
 def encrypt_AES_GCM(msg, secretKey):
     aesCipher = AES.new(secretKey, AES.MODE_GCM)
     ciphertext, authTag = aesCipher.encrypt_and_digest(msg)
     return (ciphertext, aesCipher.nonce, authTag)
 
+
 def decrypt_AES_GCM(ciphertext, nonce, authTag, secretKey):
     aesCipher = AES.new(secretKey, AES.MODE_GCM, nonce)
     plaintext = aesCipher.decrypt_and_verify(ciphertext, authTag)
     return plaintext
 
+
 def ecc_point_to_256_bit_key(point):
     sha = hashlib.sha256(int.to_bytes(point.x, 32, 'big'))
     sha.update(int.to_bytes(point.y, 32, 'big'))
     return sha.digest()
+
 
 def encrypt_ECC(msg, pubKey):
     curve = registry.get_curve('brainpoolP256r1')
@@ -158,6 +119,7 @@ def encrypt_ECC(msg, pubKey):
     ciphertextPubKey = ciphertextPrivKey * curve.g
     return (ciphertext, nonce, authTag, ciphertextPubKey)
 
+
 def decrypt_ECC(encryptedMsg, privKey):
     (ciphertext, nonce, authTag, ciphertextPubKey) = encryptedMsg
     sharedECCKey = privKey * ciphertextPubKey
@@ -166,11 +128,12 @@ def decrypt_ECC(encryptedMsg, privKey):
     return plaintext
 
 
-
 # compress x and y values to hex
 def compress_point(point):
     pubKeyHex = hex(point.x) + hex(point.y)
     return pubKeyHex
+
+
 
 # convert pubKeyHex to ec.Point
 def decompress_point(curve, pubKeyHex):
@@ -216,14 +179,11 @@ def dec(file):
         return cipher
 
 
-
 # rebuild data structure
 def decryptMessage(m):
     d = m.decode("ascii")
     
     array = d.split(': ')
-    
-    #print(array)
     
     #a = array[0].replace("\\", "")
     
@@ -256,6 +216,9 @@ def decryptMessage(m):
     
     return encryptedMsgS
 
+
+
+# what is the best way to have a function like this?
 def connector2(uri):
 
     file = ipfs(uri)
@@ -277,8 +240,43 @@ def connector2(uri):
 
 
 
+########################## MAIN HANDER FUNCTIONS ############################
+# recieve and write are both threaded
+
+def receive():
+    while True:                                                 #making valid connection
+        try:
+            message = client.recv(1024).decode('ascii')
+            if message == 'NICKNAME':
+                client.send(nickname.encode('ascii'))
+            else:
+                #print(message)
+                
+                try:
+                    connector2(message)
+                except:
+                    print("")
+
+        except:                                                 #case on wrong ip/port details
+            #print("An error occured!")
+            #client.close()
+            break
 
 
+def write():
+    while True:                                                 #message layout
+        #message = '{}: {}'.format(nickname, input(''))
+        message = '{}~ {}'.format(input("To: "), connector())     
+
+        #print(message)
+
+        #message = input()
+        #print(message.encode('ascii'))
+        client.send(message.encode('ascii'))
+
+
+
+# starting threads
 receive_thread = threading.Thread(target=receive)               #receiving multiple messages
 receive_thread.start()
 write_thread = threading.Thread(target=write)                   #sending messages 
