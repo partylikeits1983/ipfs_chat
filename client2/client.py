@@ -13,21 +13,51 @@ from ecies import encrypt, decrypt
 from time import gmtime, strftime
 
 
+from colorama import Fore
+
+import os
+
+
+################ CONNECTION SETTINGS #################
+
 host = '127.0.0.1'                                                      #LocalHost
-port = 5056    
+port = 5088    
 
 # eventually this will be your public key
-nickname = input("Choose your nickname: ")
+"""with open("username.txt", "r") as userN:
+    username = userN.read()"""
+
+
+username = input("your username: ")
+
+
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
 client.connect((host, port))                             #connecting client to server
+
+
+
+
+
+################## APPEND MESSAGES TO ARRAY ################
+
+
+messages = []
+
+
+
+
+
+
+
+
 
 
 ############ SENDING FUNCTIONS #######################
 
 # initial user input 
 def messageInput():
-    message = str(input("Message: "))
+    message = str(input(""))
     return message
     
 
@@ -81,7 +111,7 @@ def time():
 
 def connector():
 
-        # the pubKey is essentially the address of the other user
+    # the pubKey is essentially the address of the other user
     with open("pubKey.txt", "r") as pubk:
         pubKeyHex = pubk.read()
         
@@ -90,7 +120,10 @@ def connector():
     
     pubKey = decompress_point(curve,pubKeyHex)
 
-    message = f"[{time()} User: {nickname}] {messageInput()}"
+    message = f"[{time()} User: {username}] {messageInput()}"
+
+
+
     encryptedMsgS = encryptUserInput(message, pubKey)
 
     return encryptedMsgS
@@ -173,7 +206,8 @@ def decompress_point(curve, pubKeyHex):
 
 ### download from IPFS
 def ipfs(uri):
-    cmd = [ 'ipfs', 'get', uri ]
+    path = "URIs/"
+    cmd = [ 'ipfs', 'get', uri, f"--output={path}{uri}"]
     out = run(cmd, capture_output=True).stdout
     output = out.decode("utf-8")
     outputs = output.split(" ")
@@ -244,9 +278,16 @@ def connector2(uri):
 
     message = message.decode("ascii")
     
+    #messages.append(message)
+
     print(message)
+
+    #
+    # print(messages)
+
+
     
-    return message
+    #return message
 
 
 
@@ -258,7 +299,7 @@ def receive():
         try:
             message = client.recv(1024).decode('ascii')
             if message == 'NICKNAME':
-                client.send(nickname.encode('ascii'))
+                client.send(username.encode('ascii'))
             else:
                 #print(message)
                 
@@ -273,11 +314,19 @@ def receive():
             break
 
 
+
+def sendMessage():
+    global userTo
+    userTo = input("User Address: ")
+    write_thread = threading.Thread(target=write)                   #sending messages 
+    write_thread.start()
+
+
 def write():
     while True:                                                 #message layout
         #message = '{}: {}'.format(nickname, input(''))
-        message = '{}~ {}'.format(input("To: "), connector())
-        #message = '{}~ {}'.format(user, connector())    
+        #message = '{}~ {}'.format(input("To: "), connector())
+        message = '{}~ {}'.format(userTo, connector())    
 
         #print(message)
 
@@ -290,5 +339,6 @@ def write():
 # starting threads
 receive_thread = threading.Thread(target=receive)               #receiving multiple messages
 receive_thread.start()
-write_thread = threading.Thread(target=write)                   #sending messages 
-write_thread.start()
+
+
+sendMessage()
