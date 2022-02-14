@@ -1,0 +1,16 @@
+Short term todo
+
+1) Clean up client.py
+2) on server.py show how many users are currently connected
+3) client.py username is public key 
+4) messaging cli 
+5) server.py hash of itself as variable (for future features)
+
+
+Medium term todo
+
+1) server saves hash map of user to uri pairs 
+2) server.py keeps track of how much data is uploaded per user
+3) server can communicate to other instance of server.py
+4) masternode.py
+5) 
