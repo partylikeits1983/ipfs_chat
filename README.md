@@ -3,7 +3,7 @@
 
 
 #### Minimum viable product: 
-Chat application where users send encrypted messages and data over IPFS
+Chat application where users send encrypted messages and using IPFS as a the storage medium
 
 #### Current working features:
 
