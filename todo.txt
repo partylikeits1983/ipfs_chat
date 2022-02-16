@@ -14,3 +14,9 @@ Medium term todo
 3) server can communicate to other instance of server.py
 4) masternode.py
 5) 
+
+
+Long-Medium term 
+
+1) main_node keeps track of server stats
+2) client ui

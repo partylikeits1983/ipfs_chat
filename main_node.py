@@ -11,7 +11,7 @@ a server that will connect them to IPFS chat. """
 
 
 host = '127.0.0.1'                                                      #LocalHost
-port = 8977                                                             #Choosing unreserved port
+port = 7899                                                             #Choosing unreserved port
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization
 server.bind((host, port))                                               #binding host and port to socket
@@ -45,31 +45,35 @@ def cleanData(message):
     data = message
     m = data.decode("utf-8")
     l = m.split(':')
-    
+
     server = l[0]
     text = l[1]
 
     text = text.strip()
     print(server, text)
+
     return server, text
 
 
 
 def getServer():
+    print(serverDetails)
     totalServers = int(len(serverDetails))
 
     if totalServers > 1:
         n = totalServers - 1
 
         randServer = randrange(n)
+        print("if")
 
     else: 
+        print("else")
         randServer = 0
-
     
-    servers = list(serverDetails)
+    swarmServers = list(serverDetails)
     
-    server = servers[randServer]
+    print(swarmServers)
+    server = swarmServers[randServer]
     
     ip = serverDetails[server][0]
     port = serverDetails[server][1]
@@ -166,7 +170,7 @@ def receive():
 
         print("Connected with {}".format(str(address)))       
 
-        client.send('NICKNAME'.encode('ascii'))
+        client.send('PING'.encode('ascii'))
 
         serverName = client.recv(1024).decode('ascii')
 
@@ -174,7 +178,7 @@ def receive():
 
         if serverName == "USER":
 
-            client.send('Connected to MAIN NODE!'.encode('ascii'))
+            client.send('Connected to MAIN NODE as USER!'.encode('ascii'))
 
             ip, port = getServer()
 
@@ -188,10 +192,13 @@ def receive():
             print(msg)
             client.send(msg)
 
+            #client.close()
+
         else: 
+            print("main node else")
             serverNames.append(serverName)
             clients.append(client)
-            client.send('Connected to MAIN NODE!'.encode('ascii'))
+            client.send('Connected to MAIN NODE: send hash!'.encode('ascii'))
 
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()

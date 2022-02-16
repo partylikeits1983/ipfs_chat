@@ -5,7 +5,7 @@ import hashlib
 
 
 node_host = '127.0.0.1'
-node_port = 8977
+node_port = 7899
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
 client.connect((node_host, node_port)) 
@@ -39,13 +39,13 @@ def receive():
     while True:                                                 #making valid connection
         try:
             message = client.recv(1024).decode('ascii')
-            if message == 'NICKNAME':
+            if message == 'PING':
                 client.send(serverName.encode('ascii'))
             else:
                 print(message)
         except:                                                 #case on wrong ip/port details
             print("An error occured!")
-            client.close()
+            #client.close()
             break
 
 #@dev just think about it, this works but can be optimized...
@@ -73,7 +73,7 @@ import hashlib
 
 
 host = '127.0.0.1'                                                #LocalHost
-port = 3453                                                       #Choosing unreserved port
+port = 4564                                                       #Choosing unreserved port
 
 clients = []
 usernames = []
