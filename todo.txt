@@ -1,8 +1,8 @@
 Short term todo
 
-1) Clean up client.py
-2) on server.py show how many users are currently connected
-3) client.py username is public key 
+1) Clean up client.py 
+
+3) client.py username is public key (not yet)
 4) messaging cli 
 5) server.py hash of itself as variable (for future features)
 

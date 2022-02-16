@@ -12,7 +12,6 @@ from ecies import encrypt, decrypt
 
 from time import gmtime, strftime
 
-
 from colorama import Fore
 
 import os
@@ -21,7 +20,7 @@ import os
 ################ CONNECTION SETTINGS #################
 
 host = '127.0.0.1'                                                      #LocalHost
-port = 5088    
+port = 5085
 
 # eventually this will be your public key
 """with open("username.txt", "r") as userN:
@@ -38,16 +37,10 @@ client.connect((host, port))                             #connecting client to s
 
 
 
-
 ################## APPEND MESSAGES TO ARRAY ################
 
-
+#
 messages = []
-
-
-
-
-
 
 
 
@@ -291,7 +284,7 @@ def connector2(uri):
 
 
 
-########################## MAIN HANDER FUNCTIONS ############################
+########################## MAIN HANDLER FUNCTIONS ############################
 # recieve and write are both threaded
 
 def receive():

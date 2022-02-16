@@ -4,7 +4,7 @@ import hashlib
 
 
 host = '127.0.0.1'                                                #LocalHost
-port = 5085                                                       #Choosing unreserved port
+port = 5099                                                       #Choosing unreserved port
 
 clients = []
 usernames = []
@@ -28,9 +28,53 @@ with open("server.py", 'rb') as f:
             break
         sha1.update(data)
 
+
+fileHash = sha1.hexdigest()
+
 print("SHA1: {0}".format(sha1.hexdigest()))
 
 ##################
+
+# connect to main-node
+
+node_host = '127.0.0.1'
+node_port = 5999
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
+client.connect((node_host, node_port)) 
+
+serverName = input("inputServerName: ")
+
+
+
+def receive():
+    while True:                                                 #making valid connection
+        try:
+            message = client.recv(1024).decode('ascii')
+            if message == 'NICKNAME':
+                client.send(serverName.encode('ascii'))
+            else:
+                print(message)
+        except:                                                 #case on wrong ip/port details
+            print("An error occured!")
+            #client.close()
+            
+def write():
+    while True:                                                 #message layout
+        message = '{}: {}'.format(serverName, fileHash)
+        client.send(message.encode('ascii'))
+
+receive_thread = threading.Thread(target=receive)               #receiving multiple messages
+receive_thread.start()
+write_thread = threading.Thread(target=write)                   #sending messages 
+write_thread.start()
+
+
+
+###########################################################################
+
+
+
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization
