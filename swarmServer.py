@@ -3,42 +3,9 @@ from subprocess import run
 import hashlib
 
 
-host = '127.0.0.1'                                                #LocalHost
-port = 5099                                                       #Choosing unreserved port
-
-clients = []
-usernames = []
-
-#dictionary to link usernames to socket info
-users = {}
-
-#dictionary to link usernames to their ipfs uris 
-messages = {}
-
-
-######## Server hash of itself at run time ##########
-BUF_SIZE = 65536 
-
-sha1 = hashlib.sha1()
-
-with open("server.py", 'rb') as f:
-    while True:
-        data = f.read(BUF_SIZE)
-        if not data:
-            break
-        sha1.update(data)
-
-
-fileHash = sha1.hexdigest()
-
-print("SHA1: {0}".format(sha1.hexdigest()))
-
-##################
-
-# connect to main-node
 
 node_host = '127.0.0.1'
-node_port = 5999
+node_port = 8977
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
 client.connect((node_host, node_port)) 
@@ -46,6 +13,27 @@ client.connect((node_host, node_port))
 serverName = input("inputServerName: ")
 
 
+########  CONNECT TO MAIN_NODE  ##########
+BUF_SIZE = 65536 
+
+sha1 = hashlib.sha1()
+
+def getHash():
+    with open("server.py", 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha1.update(data)
+
+
+    fileHash = sha1.hexdigest()
+
+    print("SHA1: {0}".format(fileHash))
+
+    return fileHash
+
+getHash()
 
 def receive():
     while True:                                                 #making valid connection
@@ -57,11 +45,13 @@ def receive():
                 print(message)
         except:                                                 #case on wrong ip/port details
             print("An error occured!")
-            #client.close()
-            
+            client.close()
+            break
+
+#@dev just think about it, this works but can be optimized...
 def write():
     while True:                                                 #message layout
-        message = '{}: {}'.format(serverName, fileHash)
+        message = '{}:{}'.format(serverName, input(''))
         client.send(message.encode('ascii'))
 
 receive_thread = threading.Thread(target=receive)               #receiving multiple messages
@@ -71,10 +61,31 @@ write_thread.start()
 
 
 
-###########################################################################
 
 
 
+############################################
+
+
+import socket, threading                                          #Libraries import
+from subprocess import run
+import hashlib
+
+
+host = '127.0.0.1'                                                #LocalHost
+port = 3453                                                       #Choosing unreserved port
+
+clients = []
+usernames = []
+
+#dictionary to link usernames to socket info
+users = {}
+
+#dictionary to link usernames to their ipfs uris 
+messages = {}
+
+
+##################
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization

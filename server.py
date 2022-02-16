@@ -16,20 +16,6 @@ users = {}
 messages = {}
 
 
-######## Server hash of itself at run time ##########
-BUF_SIZE = 65536 
-
-sha1 = hashlib.sha1()
-
-with open("server.py", 'rb') as f:
-    while True:
-        data = f.read(BUF_SIZE)
-        if not data:
-            break
-        sha1.update(data)
-
-print("SHA1: {0}".format(sha1.hexdigest()))
-
 ##################
 
 

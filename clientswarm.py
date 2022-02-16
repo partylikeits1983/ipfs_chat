@@ -17,10 +17,68 @@ from colorama import Fore
 import os
 
 
+
+
+######### Connect to Main Node ############
+node_host = '127.0.0.1'
+node_port = 8977
+
+main_node = socket.socket(socket.AF_INET, socket.SOCK_STREAM)      #socket initialization
+main_node.connect((node_host, node_port))
+
+
+def getServer(message):
+    data = message
+    m = data.decode("utf-8")
+    l = m.split(':')
+    
+    host = l[0]
+    port = l[1]
+
+    print(host, port)
+    return host, port
+
+
+def receive():
+
+    main_node.send("USER".encode('ascii'))
+
+    while True:                                                 #making valid connection
+        try:
+            #main_node.send("USER".encode('ascii'))
+
+            message = main_node.recv(1024).decode('ascii')
+
+            if message == 'NICKNAME':
+                main_node.send("USER".encode('ascii'))
+                print("nick")
+            else:
+                global host, port
+
+                host, port = getServer(message)
+                main_node.close()
+                break
+
+
+        except:                                                 #case on wrong ip/port details
+            #print("An error occured!")
+            main_node.close()
+            
+
+
+
+
+receive()
+
+
+
+
+
+
 ################ CONNECTION SETTINGS #################
 
-host = '127.0.0.1'                                                      #LocalHost
-port = 7989
+"""host = '127.0.0.1'                                                      #LocalHost
+port = 7989"""
 
 # eventually this will be your public key
 """with open("username.txt", "r") as userN:

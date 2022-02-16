@@ -1,12 +1,17 @@
 from ipaddress import ip_address
 import socket, threading        
-import random                                        #Libraries import
+from random import randrange                                  #Libraries import
 
+
+"""This script acts as the main server node. If a server wants to be part of the swarm, 
+it sends a hash. If it is the correct hash, the server is added to the swarm.
+Users initially connect to this main-node server to get pointed to
+a server that will connect them to IPFS chat. """
 
 
 
 host = '127.0.0.1'                                                      #LocalHost
-port = 5677                                                             #Choosing unreserved port
+port = 8977                                                             #Choosing unreserved port
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)              #socket initialization
 server.bind((host, port))                                               #binding host and port to socket
@@ -45,17 +50,22 @@ def cleanData(message):
     text = l[1]
 
     text = text.strip()
-    #text = eval(text)
     print(server, text)
-    print(type(text))
     return server, text
 
 
 
 def getServer():
     totalServers = int(len(serverDetails))
-    
-    randServer = random.randint(0, totalServers-1)
+
+    if totalServers > 1:
+        n = totalServers - 1
+
+        randServer = randrange(n)
+
+    else: 
+        randServer = 0
+
     
     servers = list(serverDetails)
     
@@ -75,9 +85,7 @@ def broadcast(message):                                                 #broadca
 
 ####### Rudementary handler
 ####### if client sends hash, then we assume it is a server
-####### if not, we assume it is a user
-
-
+####### if not, we assume it is a user and pass them IP and port of a server
 
 def handle(client):                                         
     while True:
@@ -89,18 +97,19 @@ def handle(client):
 
             print(text)
 
-            fileHash = "9a8ab6a3bcab201bcca8693946976d6957c4f11a"
+            fileHash = "46f0eccbe13313571a0f4adfc42a80230ebb5c47"
 
 
             if text == fileHash:
-                print("inside")
+                
                 addServertoSwarm(server,'127.0.0.1',5555,0)
-
 
 
             else:
                 # you need to split users and servers
-                print("server cannot be added")
+                print("user")
+
+                """print("server not added; user")
 
                 ip, port = getServer()
 
@@ -112,7 +121,7 @@ def handle(client):
                 msg = server.encode('ascii')
 
                 print(msg)
-                client.send(msg)
+                client.send(msg)"""
 
 
 
@@ -127,18 +136,96 @@ def handle(client):
             break
 
 
-def receive():                                                          #accepting multiple clients
+"""def receive():                                                          #accepting multiple clients
     while True:
         client, address = server.accept()
+
         print("Connected with {}".format(str(address)))       
+
         client.send('NICKNAME'.encode('ascii'))
+
+
+
+
+
         serverName = client.recv(1024).decode('ascii')
+
         serverNames.append(serverName)
+
         clients.append(client)
-        #print("Nickname is {}".format(serverName))
-        #broadcast("{} joined!".format(serverName).encode('ascii'))
-        client.send('Connected to server!'.encode('ascii'))
+
+        client.send('Connected to MAIN NODE!'.encode('ascii'))
+
+        thread = threading.Thread(target=handle, args=(client,))
+        thread.start()"""
+
+
+def receive():
+    while True:
+        client, address = server.accept()
+
+        print("Connected with {}".format(str(address)))       
+
+        client.send('NICKNAME'.encode('ascii'))
+
+        serverName = client.recv(1024).decode('ascii')
+
+        print(serverName)
+
+        if serverName == "USER":
+
+            client.send('Connected to MAIN NODE!'.encode('ascii'))
+
+            ip, port = getServer()
+
+            print(ip)
+            print(port)
+
+            swarmServer = "{}:{}".format(str(ip),str(port))
+
+            msg = swarmServer.encode('ascii')
+
+            print(msg)
+            client.send(msg)
+
+        else: 
+            serverNames.append(serverName)
+            clients.append(client)
+            client.send('Connected to MAIN NODE!'.encode('ascii'))
+
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
+
 receive()
+
+"""    while True:
+        client, address = server.accept()
+        print("Connected with {}".format(str(address)))       
+        client.send('NICKNAME'.encode('ascii'))
+
+        serverName = client.recv(1024).decode('ascii')
+
+        if serverName == "USER":
+
+            client.send('Connected to MAIN NODE!'.encode('ascii'))
+
+            ip, port = getServer()
+
+            print(ip)
+            print(port)
+
+            server = "{}:{}".format(str(ip),str(port))
+
+            msg = server.encode('ascii')
+
+            print(msg)
+            client.send(msg)
+
+        else: 
+            serverNames.append(serverName)
+            clients.append(client)
+            client.send('Connected to MAIN NODE!'.encode('ascii'))
+
+        thread = threading.Thread(target=handle, args=(client,))
+        thread.start()"""
